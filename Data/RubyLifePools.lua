@@ -9,7 +9,8 @@ addon.dungeons = {
         guide = "https://www.wowhead.com/guide/midnight/ruby-life-pools-dungeon-overview-mythic-plus",
         route = "https://www.method.gg/guides/dungeons/ruby-life-pools",
         warningTriggers = {
-            encounterStart = { [2488] = 3, [2485] = 6, [2503] = 8 },
+            -- ENCOUNTER_START sends DungeonEncounter IDs, not JournalEncounter IDs.
+            encounterStart = { [2609] = 3, [2606] = 6, [2623] = 8 },
         },
         steps = {
             { number = 1, mapID = 2095, x = 0.363, y = 0.506, title = "Egg room",
@@ -27,7 +28,7 @@ addon.dungeons = {
             { number = 4, mapID = 2095, x = 0.612, y = 0.412,
               labelX = 0.687, labelY = 0.428, title = "Fly upstairs",
               tip = "Use a dragon at the exit to fly to the Ruby Overlook." },
-            { number = 5, mapID = 2094, x = 0.409, y = 0.673, title = "Clear the overlook ring",
+            { number = 5, mapID = 2094, x = 0.380, y = 0.673, title = "Clear the overlook ring",
               tip = "Defeat the four Blazebound Destroyers around the ring to unlock Kokia.",
               roles = { DPS = "Interrupt Fiery Blast and help stop Blaze Volley." } },
             { number = 6, mapID = 2094, x = 0.400, y = 0.427,

@@ -48,8 +48,8 @@ memory; verify version-sensitive claims.
   instances through `C_Map.GetPlayerMapPosition` or `UnitPosition`. Do not build
   room-entry detection or minimap positioning on those APIs.
 - Show notification popups only for configured boss or scripted encounter
-  starts. Non-boss tips, including trash, travel, and transitions, stay on the
-  world map only due to Blizzard API limitations.
+  starts where DungeonEncounter IDs are available. Non-boss tips, including trash, 
+  travel, and transitions, stay on the world map only due to Blizzard API limitations.
 - Keep warnings small and dismissible. The current warning stays for 10
   seconds, has a close button, and should avoid repeated spam within a run.
 - Include the player's role-specific note in the warning when `showRoleTip` is
