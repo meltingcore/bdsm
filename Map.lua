@@ -1,14 +1,5 @@
 local _, addon = ...
 
-local function PathPosition(dungeon, node, mapID)
-    if node.step then
-        local step = dungeon.steps[node.step]
-        if step and step.mapID == mapID then return step.x, step.y end
-        return nil
-    end
-    return node.x, node.y
-end
-
 local function NewPin(parent, step)
     local pin = CreateFrame("Button", nil, parent, "BackdropTemplate")
     pin.step = step
@@ -37,7 +28,6 @@ function addon:InitializeMap()
     overlay:SetFrameLevel(canvas:GetFrameLevel() + 5)
     overlay:EnableMouse(false)
     overlay.pins = {}
-    overlay.lines = {}
     self.mapOverlay = overlay
 
     overlay:SetScript("OnSizeChanged", function() addon:RefreshMap() end)
@@ -50,7 +40,6 @@ function addon:RefreshMap()
     local overlay = self.mapOverlay
     if not overlay then return end
     for _, pin in ipairs(overlay.pins) do pin:Hide() end
-    for _, line in ipairs(overlay.lines) do line:Hide() end
 
     local dungeon = self:GetDungeon()
     local mapID = WorldMapFrame:GetMapID()
@@ -74,27 +63,5 @@ function addon:RefreshMap()
                 (step.labelX or step.x) * width, -(step.labelY or step.y) * height)
             pin:Show()
         end
-    end
-
-    local path = dungeon.paths and dungeon.paths[mapID]
-    if not self.db.showRoute or not path then return end
-    local previousX, previousY
-    local lineCount = 0
-    for _, node in ipairs(path) do
-        local x, y = PathPosition(dungeon, node, mapID)
-        if x and y and previousX and previousY then
-            lineCount = lineCount + 1
-            local line = overlay.lines[lineCount]
-            if not line then
-                line = overlay:CreateLine(nil, "ARTWORK")
-                line:SetColorTexture(1, 0.65, 0.15, 0.76)
-                line:SetThickness(3)
-                overlay.lines[lineCount] = line
-            end
-            line:SetStartPoint("TOPLEFT", overlay, previousX * width, -previousY * height)
-            line:SetEndPoint("TOPLEFT", overlay, x * width, -y * height)
-            line:Show()
-        end
-        previousX, previousY = x, y
     end
 end

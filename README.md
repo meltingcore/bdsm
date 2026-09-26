@@ -12,12 +12,10 @@ with `/reload` or restart the game.
 
 ## Usage
 
-1. Enter Ruby Life Pools as a party instance and open the world map with **M**.
+1. Enter dungeon instance and open the map with **M**.
 2. Follow numbered markers on the current floor. Hover for tips.
-3. Use the small card below the minimap to browse the same tips with `<` and
-   `>`; it starts at the first tip on a new floor. Hover the card for the full
-   text and any role tip.
-4. Run `/bdsm` to opne the options panel.
+3. A small warning appears when a boss encounter starts and closes after 10 seconds.
+4. Run `/bdsm` to open the options panel.
 
 ## Sources
 
@@ -26,17 +24,3 @@ with `/reload` or restart the game.
 - [Warcraft Wiki Dungeon Map IDs](https://warcraft.wiki.gg/wiki/UiMapID)
 - [TheWoWDB](https://thewowdb.com)
 - [Keystone.guru](https://keystone.guru)
-
-## Adding a dungeon
-
-Add a data file before `Core.lua` in `bdsm.toc`, then add its instance ID to
-`addon.dungeons`. Each step needs a unique, sequential `number`, a floor
-`mapID`, normalized `x` and `y` positions, `title`, and short `tip`. Optional
-`labelX` and `labelY` move the visible number away from an existing map icon
-without changing where the route goes. `roles` can contain `TANK`, `HEALER`,
-and `DPS` tips. Keep tips short enough to
-read quickly and check coordinates in game before calling a route finished.
-`warningTriggers` can map floor IDs, NPC IDs, and encounter IDs to step numbers
-for contextual on-screen warnings.
-Optional `paths[mapID]` arrays contain verified bend coordinates or
-`{ step = N }` references for drawing walkable lines between tips.

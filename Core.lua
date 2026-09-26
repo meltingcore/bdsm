@@ -1,6 +1,6 @@
 local name, addon = ...
 
-addon.defaults = { showMap = true, showMinimap = true, showRoute = true, showRoleTip = true, showWarnings = true }
+addon.defaults = { showMap = true, showRoleTip = true, showWarnings = true }
 addon.currentStep = 1
 
 function addon:GetRole()
@@ -9,7 +9,7 @@ function addon:GetRole()
         local spec = GetSpecialization()
         role = spec and GetSpecializationRole(spec) or "DPS"
     end
-    return role == "DPS" or role
+    return role == "DAMAGER" and "DPS" or role
 end
 
 function addon:GetDungeon()
@@ -36,7 +36,6 @@ function addon:SetStep(number)
     local dungeon = self:GetDungeon()
     if not dungeon then return end
     self.currentStep = math.max(1, math.min(#dungeon.steps, number))
-    if self.RefreshMinimap then self:RefreshMinimap() end
 end
 
 function addon:ShowTip(owner, step)
@@ -53,7 +52,6 @@ end
 
 function addon:Refresh()
     if self.RefreshMap then self:RefreshMap() end
-    if self.RefreshMinimap then self:RefreshMinimap() end
 end
 
 function addon:UpdateLocation(force)
@@ -71,7 +69,6 @@ function addon:UpdateLocation(force)
         for _, step in ipairs(dungeon.steps) do
             if step.mapID == floor then self.currentStep = step.number; break end
         end
-        if self.OnFloorChanged then self:OnFloorChanged(floor) end
         force = true
     end
     if force then self:Refresh() end
@@ -91,12 +88,12 @@ events:SetScript("OnEvent", function(_, event, arg1)
         end
         if arg1 ~= name then return end
         BDSMDB = BDSMDB or {}
+        BDSMDB.showRoute = nil
         for key, value in pairs(addon.defaults) do
             if BDSMDB[key] == nil then BDSMDB[key] = value end
         end
         addon.db = BDSMDB
         addon:InitializeMap()
-        addon:InitializeMinimap()
         addon:InitializeOptions()
         C_Timer.NewTicker(2, function() addon:UpdateLocation(false) end)
         addon:UpdateLocation(true)

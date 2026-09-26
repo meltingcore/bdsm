@@ -10,7 +10,7 @@ in-game result, keep tips short, and preserve the user's existing changes.
 - `Data/*.lua` contains static dungeon steps and warning trigger IDs.
 - `Core.lua` owns saved settings, dungeon and floor selection, role selection,
   and the selected step.
-- `Map.lua`, `Minimap.lua`, `Warnings.lua`, and `Options.lua` own their named UI.
+- `Map.lua`, `Warnings.lua`, and `Options.lua` own their named UI.
 - Update `CHANGELOG.md` when behavior or supported data changes.
 
 ## Current documentation
@@ -38,8 +38,7 @@ memory; verify version-sensitive claims.
 - Keep a step's route position (`x`, `y`) separate from its visible marker
   position (`labelX`, `labelY`). Offset boss labels beside built-in boss icons
   so both remain visible.
-- Draw route lines only when their walkable bends are verified. Numbered steps
-  are sufficient when no trustworthy route polyline exists.
+- Numbered steps are the current route guidance.
 - Keep tips concise, actionable, and suitable for first-time players. Include
   role-specific `TANK`, `HEALER`, or `DPS` notes where they add value.
 
@@ -48,12 +47,12 @@ memory; verify version-sensitive claims.
 - WoW does not provide usable player map or world coordinates inside dungeon
   instances through `C_Map.GetPlayerMapPosition` or `UnitPosition`. Do not build
   room-entry detection or minimap positioning on those APIs.
-- Trigger a tip when its subject is encountered. Use sourced NPC IDs via
-  nameplate, target, or mouseover events, and encounter start/end events for
-  bosses and transitions.
-- Keep warnings small and dismissible. The current warning stays for 20
+- Show notification popups only for configured boss or scripted encounter
+  starts. Non-boss tips, including trash, travel, and transitions, stay on the
+  world map only due to Blizzard API limitations.
+- Keep warnings small and dismissible. The current warning stays for 10
   seconds, has a close button, and should avoid repeated spam within a run.
 - Include the player's role-specific note in the warning when `showRoleTip` is
   enabled, and respect `showWarnings` immediately when it is turned off.
-- Document limitations of event-based cues, especially when nameplates are
-  disabled or an NPC is not exposed as a unit.
+- Document that encounter-start warnings are fight-time cues and can be missed
+  when the player joins an encounter after it starts.

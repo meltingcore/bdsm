@@ -1,12 +1,11 @@
 ## Interface: 120100
 ## Title: Brann's Dungeon Survival Manual
-## Notes: Numbered dungeon tips on the map and a minimap step card.
+## Notes: Numbered dungeon tips on the map and contextual warnings.
 ## Version: 0.1.0
 ## SavedVariables: BDSMDB
 
 Data/RubyLifePools.lua
 Core.lua
 Map.lua
-Minimap.lua
 Warnings.lua
 Options.lua
