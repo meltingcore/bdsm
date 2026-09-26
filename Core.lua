@@ -1,13 +1,15 @@
 local name, addon = ...
 
-addon.defaults = { showMap = true, showMinimap = true, showRoute = true, showRoleTip = true }
+addon.defaults = { showMap = true, showMinimap = true, showRoute = true, showRoleTip = true, showWarnings = true }
 addon.currentStep = 1
 
 function addon:GetRole()
     local role = UnitGroupRolesAssigned("player")
-    if role and role ~= "NONE" then return role end
-    local spec = GetSpecialization()
-    return spec and GetSpecializationRole(spec) or "DPS"
+    if not role or role == "NONE" then
+        local spec = GetSpecialization()
+        role = spec and GetSpecializationRole(spec) or "DPS"
+    end
+    return role == "DPS" or role
 end
 
 function addon:GetDungeon()
@@ -61,6 +63,7 @@ function addon:UpdateLocation(force)
         self.lastDungeon = dungeon
         self.lastFloor = nil
         self.currentStep = 1
+        if self.OnDungeonChanged then self:OnDungeonChanged(dungeon) end
         force = true
     end
     if floor and floor ~= self.lastFloor then
@@ -68,6 +71,7 @@ function addon:UpdateLocation(force)
         for _, step in ipairs(dungeon.steps) do
             if step.mapID == floor then self.currentStep = step.number; break end
         end
+        if self.OnFloorChanged then self:OnFloorChanged(floor) end
         force = true
     end
     if force then self:Refresh() end

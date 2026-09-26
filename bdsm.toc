@@ -8,4 +8,5 @@ Data/RubyLifePools.lua
 Core.lua
 Map.lua
 Minimap.lua
+Warnings.lua
 Options.lua

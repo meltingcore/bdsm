@@ -2,5 +2,4 @@
 
 ## 0.1.0
 
-- Add map tips, optional route lines, role hints,
-  a minimap step card, and Addon options.
+- Add map tips, role hints, note warnings, a minimap step card, and Addon options.

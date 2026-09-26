@@ -1,5 +1,14 @@
 local _, addon = ...
 
+local function PathPosition(dungeon, node, mapID)
+    if node.step then
+        local step = dungeon.steps[node.step]
+        if step and step.mapID == mapID then return step.x, step.y end
+        return nil
+    end
+    return node.x, node.y
+end
+
 local function NewPin(parent, step)
     local pin = CreateFrame("Button", nil, parent, "BackdropTemplate")
     pin.step = step
@@ -49,8 +58,7 @@ function addon:RefreshMap()
     local width, height = overlay:GetSize()
     if width <= 0 or height <= 0 then return end
 
-    local previous
-    local pinCount, lineCount = 0, 0
+    local pinCount = 0
     for _, step in ipairs(dungeon.steps) do
         if step.mapID == mapID then
             pinCount = pinCount + 1
@@ -62,23 +70,31 @@ function addon:RefreshMap()
             pin.step = step
             pin.text:SetText(step.number)
             pin:ClearAllPoints()
-            pin:SetPoint("CENTER", overlay, "TOPLEFT", step.x * width, -step.y * height)
+            pin:SetPoint("CENTER", overlay, "TOPLEFT",
+                (step.labelX or step.x) * width, -(step.labelY or step.y) * height)
             pin:Show()
-
-            if previous and self.db.showRoute then
-                lineCount = lineCount + 1
-                local line = overlay.lines[lineCount]
-                if not line then
-                    line = overlay:CreateLine(nil, "ARTWORK")
-                    line:SetColorTexture(1, 0.65, 0.15, 0.76)
-                    line:SetThickness(3)
-                    overlay.lines[lineCount] = line
-                end
-                line:SetStartPoint("TOPLEFT", overlay, previous.x * width, -previous.y * height)
-                line:SetEndPoint("TOPLEFT", overlay, step.x * width, -step.y * height)
-                line:Show()
-            end
-            previous = step
         end
+    end
+
+    local path = dungeon.paths and dungeon.paths[mapID]
+    if not self.db.showRoute or not path then return end
+    local previousX, previousY
+    local lineCount = 0
+    for _, node in ipairs(path) do
+        local x, y = PathPosition(dungeon, node, mapID)
+        if x and y and previousX and previousY then
+            lineCount = lineCount + 1
+            local line = overlay.lines[lineCount]
+            if not line then
+                line = overlay:CreateLine(nil, "ARTWORK")
+                line:SetColorTexture(1, 0.65, 0.15, 0.76)
+                line:SetThickness(3)
+                overlay.lines[lineCount] = line
+            end
+            line:SetStartPoint("TOPLEFT", overlay, previousX * width, -previousY * height)
+            line:SetEndPoint("TOPLEFT", overlay, x * width, -y * height)
+            line:Show()
+        end
+        previousX, previousY = x, y
     end
 end
