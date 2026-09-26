@@ -7,7 +7,7 @@ function addon:GetRole()
     local role = UnitGroupRolesAssigned("player")
     if role and role ~= "NONE" then return role end
     local spec = GetSpecialization()
-    return spec and GetSpecializationRole(spec) or "DAMAGER"
+    return spec and GetSpecializationRole(spec) or "DPS"
 end
 
 function addon:GetDungeon()

@@ -44,7 +44,7 @@ world-map marker.
 Add a data file before `Core.lua` in `bdsm.toc`, then add its instance ID to
 `addon.dungeons`. Each step needs a unique, sequential `number`, a floor
 `mapID`, normalized `x` and `y` positions, `title`, and short `tip`. Optional
-`roles` keys are `TANK`, `HEALER`, and `DAMAGER`. Keep tips short enough to
+`roles` keys are `TANK`, `HEALER`, and `DPS`. Keep tips short enough to
 read quickly and check coordinates in game before calling a route finished.
 
 The addon reads static data only. It neither downloads Wowhead pages during
