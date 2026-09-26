@@ -1,0 +1,9 @@
+2. Enter a supported dungeon and open the world map with **M**.
+3. Hover numbered markers for tips; the same nearby markers appear on the
+   minimap..DS_Store
+.idea/
+.vscode/
+dist/
+__pycache__/
+scripts/__pycache__/
+route-update.log
