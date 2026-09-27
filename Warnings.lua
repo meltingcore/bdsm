@@ -1,10 +1,16 @@
 local _, addon = ...
 
+local ROLE_COLORS = {
+    TANK = { 0.4, 0.7, 1 },
+    HEALER = { 0.4, 1, 0.5 },
+    DPS = { 1, 0.45, 0.45 },
+}
+
 local function GetWarningFrame()
     if addon.warningFrame then return addon.warningFrame end
 
     local frame = CreateFrame("Frame", nil, UIParent, "BackdropTemplate")
-    frame:SetSize(370, 94)
+    frame:SetSize(560, 120)
     frame:SetPoint("TOP", UIParent, "TOP", 0, -130)
     frame:SetFrameStrata("HIGH")
     frame:SetBackdrop({
@@ -13,22 +19,30 @@ local function GetWarningFrame()
         edgeSize = 16,
         insets = { left = 4, right = 4, top = 4, bottom = 4 },
     })
-    frame:SetBackdropColor(0.04, 0.04, 0.05, 0.82)
+    frame:SetBackdropColor(0.04, 0.04, 0.05, 0.94)
     frame:SetBackdropBorderColor(0.7, 0.55, 0.3, 0.65)
 
-    frame.title = frame:CreateFontString(nil, "OVERLAY", "GameFontNormal")
-    frame.title:SetPoint("TOPLEFT", frame, "TOPLEFT", 15, -12)
-    frame.title:SetWidth(320)
+    frame.title = frame:CreateFontString(nil, "OVERLAY", "GameFontNormalLarge")
+    frame.title:SetFont(STANDARD_TEXT_FONT, 22, "OUTLINE")
+    frame.title:SetPoint("TOPLEFT", frame, "TOPLEFT", 18, -16)
+    frame.title:SetWidth(490)
     frame.title:SetJustifyH("LEFT")
-    frame.body = frame:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
-    frame.body:SetPoint("TOPLEFT", frame.title, "BOTTOMLEFT", 0, -6)
-    frame.body:SetWidth(335)
+    frame.body = frame:CreateFontString(nil, "OVERLAY", "GameFontHighlightLarge")
+    frame.body:SetFont(STANDARD_TEXT_FONT, 18, "OUTLINE")
+    frame.body:SetPoint("TOPLEFT", frame.title, "BOTTOMLEFT", 0, -10)
+    frame.body:SetWidth(524)
     frame.body:SetJustifyH("LEFT")
+    frame.role = frame:CreateFontString(nil, "OVERLAY", "GameFontHighlightLarge")
+    frame.role:SetFont(STANDARD_TEXT_FONT, 18, "OUTLINE")
+    frame.role:SetPoint("TOPLEFT", frame.body, "BOTTOMLEFT", 0, -10)
+    frame.role:SetWidth(524)
+    frame.role:SetJustifyH("LEFT")
 
     frame.close = CreateFrame("Button", nil, frame)
-    frame.close:SetSize(22, 22)
+    frame.close:SetSize(30, 30)
     frame.close:SetPoint("TOPRIGHT", frame, "TOPRIGHT", -7, -6)
     frame.close.text = frame.close:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
+    frame.close.text:SetFont(STANDARD_TEXT_FONT, 18, "OUTLINE")
     frame.close.text:SetPoint("CENTER")
     frame.close.text:SetText("X")
     frame.close:SetScript("OnClick", function()
@@ -49,13 +63,20 @@ end
 function addon:DisplayWarning(step)
     local role = self:GetRole()
     local roleTip = self.db.showRoleTip and step.roles and step.roles[role]
-    local message = step.tip
-    if roleTip then message = message .. "\n" .. role .. ": " .. roleTip end
-
+    if roleTip == "" then roleTip = nil end
     local frame = GetWarningFrame()
     frame.title:SetText(step.number .. ". " .. step.title)
-    frame.body:SetText(message)
-    frame:SetHeight(roleTip and 122 or 94)
+    frame.body:SetText(step.tip)
+    if roleTip then
+        local color = ROLE_COLORS[role] or { 1, 1, 1 }
+        frame.role:SetTextColor(color[1], color[2], color[3])
+        frame.role:SetText(role .. ": " .. roleTip)
+        frame.role:Show()
+    else
+        frame.role:Hide()
+    end
+    frame:SetHeight(16 + frame.title:GetStringHeight() + 10 + frame.body:GetStringHeight()
+        + (roleTip and (10 + frame.role:GetStringHeight()) or 0) + 18)
     frame:Show()
     self.warningSerial = (self.warningSerial or 0) + 1
     local serial = self.warningSerial
@@ -72,8 +93,7 @@ end
 
 function addon:WarnStep(number)
     if not self.db or not self.db.showWarnings then return end
-    local dungeon = self:GetDungeon()
-    local step = dungeon and dungeon.steps[number]
+    local step = self:GetStep(number)
     if step and not self.warningSeen then self:OnDungeonChanged() end
     if not step or not self.warningSeen or self.warningSeen[number] then return end
 

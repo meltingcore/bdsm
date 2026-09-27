@@ -1,7 +1,50 @@
 local name, addon = ...
 
-addon.defaults = { showMap = true, showRoleTip = true, showWarnings = true }
+addon.defaults = { showMap = true, showRoleTip = true, showWarnings = true, editMode = false }
 addon.currentStep = 1
+
+function addon:GetStepOverride(step)
+    local dungeon, instanceID = self:GetDungeon()
+    local saved = dungeon and self.db and self.db.tipOverrides[instanceID]
+    return saved and saved[step.number]
+end
+
+function addon:SaveStepOverride(step, changes)
+    local dungeon, instanceID = self:GetDungeon()
+    if not dungeon then return end
+    local byDungeon = self.db.tipOverrides[instanceID]
+    if not byDungeon then
+        byDungeon = {}
+        self.db.tipOverrides[instanceID] = byDungeon
+    end
+    local saved = byDungeon[step.number] or {}
+    for key, value in pairs(changes) do saved[key] = value end
+    byDungeon[step.number] = saved
+    self:Refresh()
+end
+
+function addon:ResetStepOverride(step)
+    local dungeon, instanceID = self:GetDungeon()
+    local byDungeon = dungeon and self.db.tipOverrides[instanceID]
+    if byDungeon then byDungeon[step.number] = nil end
+    self:Refresh()
+end
+
+function addon:GetEditedStep(step)
+    local saved = self:GetStepOverride(step)
+    if not saved then return step end
+    local edited = {}
+    for key, value in pairs(step) do edited[key] = value end
+    for key, value in pairs(saved) do
+        if key ~= "roles" then edited[key] = value end
+    end
+    if saved.roles then
+        edited.roles = {}
+        for role, value in pairs(step.roles or {}) do edited.roles[role] = value end
+        for role, value in pairs(saved.roles) do edited.roles[role] = value end
+    end
+    return edited
+end
 
 function addon:GetRole()
     local role = UnitGroupRolesAssigned("player")
@@ -14,7 +57,9 @@ end
 
 function addon:GetDungeon()
     local _, instanceType, _, _, _, _, _, instanceID = GetInstanceInfo()
-    if instanceType == "party" then return self.dungeons[instanceID] end
+    if instanceType == "party" then
+        return self.dungeons[instanceID], instanceID
+    end
 end
 
 function addon:GetFloor()
@@ -29,7 +74,8 @@ end
 
 function addon:GetStep(number)
     local dungeon = self:GetDungeon()
-    return dungeon and dungeon.steps[number]
+    local step = dungeon and dungeon.steps[number]
+    return step and self:GetEditedStep(step)
 end
 
 function addon:SetStep(number)
@@ -43,6 +89,7 @@ function addon:ShowTip(owner, step)
     GameTooltip:AddLine(step.number .. ". " .. step.title, 1, 0.82, 0.34)
     GameTooltip:AddLine(step.tip, 1, 1, 1, true)
     local roleTip = self.db.showRoleTip and step.roles and step.roles[self:GetRole()]
+    if roleTip == "" then roleTip = nil end
     if roleTip then
         GameTooltip:AddLine(" ")
         GameTooltip:AddLine(self:GetRole() .. ": " .. roleTip, 0.55, 0.85, 1, true)
@@ -54,10 +101,17 @@ function addon:Refresh()
     if self.RefreshMap then self:RefreshMap() end
 end
 
+function addon:SetEditMode(enabled)
+    self.db.editMode = enabled and true or false
+    if not self.db.editMode and self.stepEditor then self.stepEditor:Hide() end
+    self:Refresh()
+end
+
 function addon:UpdateLocation(force)
     local dungeon = self:GetDungeon()
     local floor = dungeon and self:GetFloor()
     if dungeon ~= self.lastDungeon then
+        if self.stepEditor then self.stepEditor:Hide() end
         self.lastDungeon = dungeon
         self.lastFloor = nil
         self.currentStep = 1
@@ -93,6 +147,7 @@ events:SetScript("OnEvent", function(_, event, arg1)
             if BDSMDB[key] == nil then BDSMDB[key] = value end
         end
         addon.db = BDSMDB
+        addon.db.tipOverrides = addon.db.tipOverrides or {}
         addon:InitializeMap()
         addon:InitializeOptions()
         C_Timer.NewTicker(2, function() addon:UpdateLocation(false) end)

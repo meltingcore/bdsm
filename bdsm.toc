@@ -5,7 +5,9 @@
 ## SavedVariables: BDSMDB
 
 Data/RubyLifePools.lua
+Data/AzureVault.lua
 Core.lua
 Map.lua
+Editor.lua
 Warnings.lua
 Options.lua
