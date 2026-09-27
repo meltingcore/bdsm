@@ -99,7 +99,7 @@ function addon:WarnStep(number)
 
     self:DisplayWarning(step)
     self.warningSeen[number] = true
-    self:SetStep(number)
+    self:SetStep(step.number)
 end
 
 local events = CreateFrame("Frame")

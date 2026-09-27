@@ -9,7 +9,7 @@ function addon:InitializeOptions()
         { "showMap", "Show numbered world map tips", "Display tips on the current dungeon floor." },
         { "showRoleTip", "Show my role's tip", "Add a tank, healer, or damage tip in map tooltips and encounter warnings when available." },
         { "showWarnings", "Show encounter warnings", "Show a small, dismissible tip when a configured boss or event encounter starts." },
-        { "editMode", "Unlock map tips for editing", "In a dungeon, drag a numbered marker to move it or click one to edit its title and tips. Turn this off to lock markers." },
+        { "editMode", "Unlock map tips for editing", "In a dungeon, drag a marker or click it to edit its route number and text. Use Add tip on the map to create one, then lock markers when done." },
     }
     for _, choice in ipairs(choices) do
         local key, label, description = unpack(choice)

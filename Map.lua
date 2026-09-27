@@ -50,6 +50,7 @@ local function NewPin(parent, step)
     pin:SetBackdropColor(0.13, 0.19, 0.26, 0.94)
     pin:SetBackdropBorderColor(1, 0.72, 0.24, 1)
     pin:SetFrameLevel(parent:GetFrameLevel() + 2)
+    pin:RegisterForClicks("LeftButtonUp")
     pin.text = pin:CreateFontString(nil, "OVERLAY", "GameFontNormal")
     pin.text:SetPoint("CENTER")
     pin.text:SetText(step.number)
@@ -77,21 +78,30 @@ local function NewPin(parent, step)
         C_Timer.After(0, function() self.suppressClick = nil end)
         if addon.db.editMode and self.dragMapID == WorldMapFrame:GetMapID()
             and self.dragX and self.dragY then
-            addon:SaveStepOverride(self.dragStep,
-                { labelX = self.dragX, labelY = self.dragY })
+            local changes = { labelX = self.dragX, labelY = self.dragY }
+            if self.dragStep.customID then
+                changes.x, changes.y = self.dragX, self.dragY
+            end
+            addon:SaveStepOverride(self.dragStep, changes)
         end
         self.dragStep = nil
     end)
     pin:SetScript("OnEnter", function(self)
         addon:ShowTip(self, self.step)
         if addon.db.editMode then
-            GameTooltip:AddLine("Drag to move. Click to edit text.", 0.55, 0.85, 1)
+            GameTooltip:AddLine("Drag to move. Click to edit; right-click to add after.", 0.55, 0.85, 1)
             GameTooltip:Show()
         end
     end)
     pin:SetScript("OnLeave", function() GameTooltip:Hide() end)
-    pin:SetScript("OnClick", function(self)
+    pin:SetScript("OnClick", function(self, button)
         if self.suppressClick then return end
+        if button == "RightButton" then
+            if addon.db.editMode then
+                addon:OpenNewStepEditor(WorldMapFrame:GetMapID(), self.sourceStep)
+            end
+            return
+        end
         if addon.db.editMode then
             addon:OpenStepEditor(self.sourceStep)
         else
@@ -111,10 +121,25 @@ function addon:InitializeMap()
     overlay:SetFrameLevel(canvas:GetFrameLevel() + 5)
     overlay:EnableMouse(false)
     overlay.pins = {}
-    overlay.editHint = overlay:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
-    overlay.editHint:SetPoint("TOPRIGHT", overlay, "TOPRIGHT", -12, -12)
-    overlay.editHint:SetText("BDSM edit mode: drag markers or click to edit")
+    local controlParent = map.ScrollContainer or map
+    local controls = CreateFrame("Frame", nil, controlParent)
+    controls:SetAllPoints(controlParent)
+    controls:SetFrameLevel(controlParent:GetFrameLevel() + 20)
+    controls:EnableMouse(false)
+    overlay.controls = controls
+    overlay.editHint = controls:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
+    overlay.editHint:SetPoint("TOPRIGHT", controls, "TOPRIGHT", -12, -45)
+    overlay.editHint:SetText("Drag, click to edit, or right-click to add after")
     overlay.editHint:Hide()
+    overlay.addButton = CreateFrame("Button", nil, controls, "UIPanelButtonTemplate")
+    overlay.addButton:SetSize(90, 25)
+    overlay.addButton:SetPoint("TOPRIGHT", controls, "TOPRIGHT", -12, -12)
+    overlay.addButton:SetFrameLevel(controls:GetFrameLevel() + 1)
+    overlay.addButton:SetText("Add tip")
+    overlay.addButton:SetScript("OnClick", function(button)
+        addon:OpenNewStepEditor(button.mapID, button.afterStep)
+    end)
+    overlay.addButton:Hide()
     self.mapOverlay = overlay
 
     overlay:SetScript("OnSizeChanged", function() addon:RefreshMap() end)
@@ -132,16 +157,28 @@ function addon:RefreshMap()
         pin:Hide()
     end
     overlay.editHint:Hide()
+    overlay.addButton:Hide()
 
     local dungeon = self:GetDungeon()
     local mapID = WorldMapFrame:GetMapID()
     if not dungeon or not self.db.showMap or not mapID then return end
-    overlay.editHint:SetShown(self.db.editMode)
     local width, height = overlay:GetSize()
     if width <= 0 or height <= 0 then return end
 
+    local steps = self:GetSteps()
+    local lastOnFloor
+    for _, step in ipairs(steps) do
+        if step.mapID == mapID then lastOnFloor = step end
+    end
+    if self.db.editMode and lastOnFloor then
+        overlay.addButton.mapID = mapID
+        overlay.addButton.afterStep = lastOnFloor.sourceStep
+        overlay.addButton:Show()
+        overlay.editHint:Show()
+    end
+
     local encounters, links
-    for _, step in ipairs(dungeon.steps) do
+    for _, step in ipairs(steps) do
         if step.mapID == mapID then
             if step.journalEncounterID and not encounters then
                 encounters = C_EncounterJournal.GetEncountersOnMap(mapID) or {}
@@ -153,18 +190,22 @@ function addon:RefreshMap()
     end
 
     local pinCount, fallbackCount = 0, 0
-    for _, step in ipairs(dungeon.steps) do
+    for _, step in ipairs(steps) do
         if step.mapID == mapID then
-            local edited = self:GetEditedStep(step)
-            local x, y, labelX, labelY = GetStepPosition(edited, encounters, links)
+            local x, y, labelX, labelY = GetStepPosition(step, encounters, links)
             pinCount = pinCount + 1
             local pin = overlay.pins[pinCount]
             if not pin then
                 pin = NewPin(overlay, step)
                 overlay.pins[pinCount] = pin
             end
-            pin.step = edited
-            pin.sourceStep = step
+            pin.step = step
+            pin.sourceStep = step.sourceStep
+            if self.db.editMode then
+                pin:RegisterForClicks("LeftButtonUp", "RightButtonUp")
+            else
+                pin:RegisterForClicks("LeftButtonUp")
+            end
             pin.text:SetText(step.number)
             pin:ClearAllPoints()
             if (x and y) or (labelX and labelY) then
@@ -175,7 +216,7 @@ function addon:RefreshMap()
                 -- A map link or journal pin may be unavailable on this client.
                 -- Keep the route step visible without inventing a map position.
                 fallbackCount = fallbackCount + 1
-                pin.fallbackText:SetText(edited.title)
+                pin.fallbackText:SetText(step.title)
                 pin.fallbackText:Show()
                 pin:SetPoint("TOPLEFT", overlay, "TOPLEFT", 12,
                     -12 - (fallbackCount - 1) * 32)

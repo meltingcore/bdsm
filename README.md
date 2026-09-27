@@ -21,15 +21,25 @@ with `/reload` or restart the game.
 
 While inside a supported dungeon, enable **Unlock map tips for editing** in
 `/bdsm`, or type `/bdsm edit`. Open the world map and drag a numbered marker to
-place it on the current floor. Click a marker to edit its title, main tip, and
-optional role tips. Save the text, then turn the option off or type `/bdsm lock`
+place it on the current floor. Click a marker to edit its route number, title,
+main tip, and optional role tips. Enter a route number from 1 through the total
+number of tips to move that tip; the others renumber automatically. Save the
+changes, then turn the option off or type `/bdsm lock`
 to restore normal marker clicks. **Reset step** in the editor removes that
-step's saved text and position changes.
+step's saved text and marker position changes; set its route number separately.
 
-Edits are saved per dungeon and step in the account's `BDSMDB` saved
-variables. Moving a marker changes its visible position only; the route point
-and Blizzard's built-in boss or floor-link icons remain separate. A marker
-without an available Blizzard anchor can also be dragged from the map-side
+To create a tip, click **Add tip** on the dungeon floor's world map. The new
+marker starts at the center of that floor; drag it to the right spot after
+saving its text. Right-click an existing marker to insert a new tip immediately
+after it in the numbered route. You can also enter a different route number
+while creating it. Click a custom tip to edit or delete it. New
+tips appear on the map only; they do not trigger encounter warnings.
+
+Edits and new tips are saved per dungeon in the account's `BDSMDB` saved
+variables. Moving a built-in marker changes its visible position only; its
+route point and Blizzard's boss or floor-link icons remain separate. A custom
+tip's marker is also its route point. A built-in marker without an available
+Blizzard anchor can also be dragged from the map-side
 list onto the floor. Changes are saved on UI logout/reload and shared by
 characters on this WoW installation.
 
