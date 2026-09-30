@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- Add an external importer that bakes in-game route edits directly into each dungeon data file, leaving account display settings in SavedVariables.
 - Allow a tip's route number to be changed in the editor. Renumber the route while keeping boss warning triggers attached to their original steps.
 - Add custom map tips during edit mode, including route insertion, text editing, dragging, and deletion. Keep encounter warnings tied to configured boss steps.
 - Add an unlockable in-game editor for dragging map markers and editing step and role tips. Save account-wide overrides without changing built-in route data.

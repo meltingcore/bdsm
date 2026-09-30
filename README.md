@@ -43,6 +43,28 @@ Blizzard anchor can also be dragged from the map-side
 list onto the floor. Changes are saved on UI logout/reload and shared by
 characters on this WoW installation.
 
+### Import in-game edits into Git
+
+WoW cannot write into the addon's source folder. After editing in game, run
+`/reload` to save your changes, then run this from the addon repository:
+
+```sh
+python3 tools/import_saved_variables.py
+git status --short
+```
+
+The script reads the account-wide `WTF/Account/<account>/SavedVariables/bdsm.lua`
+and updates the matching `Data/<Dungeon>.lua` file directly. It folds saved
+positions, text, new tips, and route order into that dungeon's `steps` table,
+and updates encounter warning step numbers. Display settings stay in WoW's save.
+Review the changed dungeon file before committing it. After the next `/reload`,
+the addon clears the imported saved edits for that dungeon so tips are not
+duplicated; you can then make a new round of edits. Repeating an import of the
+same save does not rewrite the file. If WoW has more than one account save,
+pass `--source` with the desired `bdsm.lua` path. Use `--dungeon 2515` to
+import just The Azure Vault, or `--check` to report
+pending edits without changing files.
+
 Encounter warnings are fight-time cues and can be missed when joining a fight
 after it starts. The Azure Vault trash tips use preceding entrance or floor-link
 pins as route checkpoints; they do not mark exact enemy spawn positions. If

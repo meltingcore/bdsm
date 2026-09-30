@@ -293,6 +293,16 @@ events:SetScript("OnEvent", function(_, event, arg1)
         addon.db.tipOverrides = addon.db.tipOverrides or {}
         addon.db.customSteps = addon.db.customSteps or {}
         addon.db.routeOrder = addon.db.routeOrder or {}
+        addon.db.appliedImportRevision = addon.db.appliedImportRevision or {}
+        for instanceID, dungeon in pairs(addon.dungeons) do
+            if dungeon.importRevision and addon.db.appliedImportRevision[instanceID] ~= dungeon.importRevision then
+                addon.db.tipOverrides[instanceID] = nil
+                addon.db.customSteps[instanceID] = nil
+                addon.db.routeOrder[instanceID] = nil
+                addon.db.appliedImportRevision[instanceID] = dungeon.importRevision
+            end
+        end
+        addon.db.importedSnapshot = nil
         addon:InitializeMap()
         addon:InitializeOptions()
         C_Timer.NewTicker(2, function() addon:UpdateLocation(false) end)
